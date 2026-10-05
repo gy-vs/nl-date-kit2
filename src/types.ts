@@ -14,6 +14,19 @@ export interface ParsingOption {
     timezones?: TimezoneAbbrMap;
 
     /**
+     * Weekdays considered as the weekend (non-business days) for relative
+     * business/working day expressions (e.g. "in 3 business days").
+     *
+     * The values are from the {@link Weekday} enum, e.g.
+     * `[Weekday.FRIDAY, Weekday.SATURDAY]` for weekends on Friday and Saturday.
+     * (default = [Weekday.SATURDAY, Weekday.SUNDAY])
+     *
+     * An empty array or an array containing all seven weekdays is invalid and
+     * causes `parse()`/`parseDate()` to throw.
+     */
+    weekendDays?: Weekday[];
+
+    /**
      * Internal debug event handler.
      * @internal
      */

@@ -1,7 +1,8 @@
 import { MergingRefiner } from "../../../common/abstractRefiners";
 import { ParsingComponents, ParsingResult, ReferenceWithTimezone } from "../../../results";
-import { parseDuration } from "../constants";
+import { parseDuration, parseNumberPattern, BUSINESS_DAY_TIME_UNITS_PATTERN } from "../constants";
 import { reverseDuration } from "../../../calculation/duration";
+import { createParsingComponentsAfterBusinessDays } from "../../../calculation/businessdays";
 
 function hasImpliedEarlierReferenceDate(result: ParsingResult): boolean {
     return result.text.match(/\s+(before|from)$/i) != null;
@@ -10,6 +11,8 @@ function hasImpliedEarlierReferenceDate(result: ParsingResult): boolean {
 function hasImpliedLaterReferenceDate(result: ParsingResult): boolean {
     return result.text.match(/\s+(after|since)$/i) != null;
 }
+
+const BUSINESS_DAY_PATTERN = new RegExp(BUSINESS_DAY_TIME_UNITS_PATTERN, "i");
 
 /**
  * Merges a relative data/time that follow by an absolute date.
@@ -37,7 +40,25 @@ export default class ENMergeRelativeFollowByDateRefiner extends MergingRefiner {
         return !!nextResult.start.get("day") && !!nextResult.start.get("month") && !!nextResult.start.get("year");
     }
 
-    mergeResults(textBetween: string, currentResult: ParsingResult, nextResult: ParsingResult): ParsingResult {
+    mergeResults(textBetween: string, currentResult: ParsingResult, nextResult: ParsingResult, context): ParsingResult {
+        const mergedText = `${currentResult.text}${textBetween}${nextResult.text}`;
+
+        const businessDayMatch = currentResult.text.match(BUSINESS_DAY_PATTERN);
+        if (businessDayMatch) {
+            let businessDaysCount = parseNumberPattern(businessDayMatch[1]);
+            if (hasImpliedEarlierReferenceDate(currentResult)) {
+                businessDaysCount = -businessDaysCount;
+            }
+
+            const components = createParsingComponentsAfterBusinessDays(
+                ReferenceWithTimezone.fromDate(nextResult.start.date()),
+                businessDaysCount,
+                context.weekendDays
+            );
+
+            return new ParsingResult(nextResult.reference, currentResult.index, mergedText, components);
+        }
+
         let duration = parseDuration(currentResult.text);
         if (hasImpliedEarlierReferenceDate(currentResult)) {
             duration = reverseDuration(duration);
@@ -48,11 +69,6 @@ export default class ENMergeRelativeFollowByDateRefiner extends MergingRefiner {
             duration
         );
 
-        return new ParsingResult(
-            nextResult.reference,
-            currentResult.index,
-            `${currentResult.text}${textBetween}${nextResult.text}`,
-            components
-        );
+        return new ParsingResult(nextResult.reference, currentResult.index, mergedText, components);
     }
 }

@@ -1,8 +1,9 @@
 import { ReferenceWithTimezone, ParsingComponents, ParsingResult } from "./results";
-import { Component, ParsedResult, ParsingOption, ParsingReference } from "./types";
+import { Component, ParsedResult, ParsingOption, ParsingReference, Weekday } from "./types";
 import { AsyncDebugBlock, DebugHandler } from "./debugging";
 import ENDefaultConfiguration from "./locales/en/configuration";
 import { toTimezoneOffset } from "./timezone";
+import { normalizeWeekendDays } from "./calculation/businessdays";
 
 /**
  * Chrono configuration.
@@ -148,6 +149,11 @@ export class ParsingContext implements DebugHandler {
     readonly reference: ReferenceWithTimezone;
 
     /**
+     * Weekdays considered as the weekend for business/working day expressions.
+     */
+    readonly weekendDays: Weekday[];
+
+    /**
      * @deprecated. Use `reference.instant` instead.
      */
     readonly refDate: Date;
@@ -157,6 +163,7 @@ export class ParsingContext implements DebugHandler {
         this.option = option ?? {};
         this.reference = ReferenceWithTimezone.fromInput(refDate, this.option.timezones);
         this.refDate = this.reference.instant;
+        this.weekendDays = normalizeWeekendDays(this.option.weekendDays);
     }
 
     createParsingComponents(components?: { [c in Component]?: number } | ParsingComponents): ParsingComponents {

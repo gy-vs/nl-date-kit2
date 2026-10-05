@@ -9,6 +9,10 @@ import ENSlashMonthFormatParser from "./parsers/ENSlashMonthFormatParser";
 import ENTimeExpressionParser from "./parsers/ENTimeExpressionParser";
 import ENTimeUnitAgoFormatParser from "./parsers/ENTimeUnitAgoFormatParser";
 import ENTimeUnitLaterFormatParser from "./parsers/ENTimeUnitLaterFormatParser";
+import ENBusinessDayWithinFormatParser from "./parsers/ENBusinessDayWithinFormatParser";
+import ENBusinessDayAgoFormatParser from "./parsers/ENBusinessDayAgoFormatParser";
+import ENBusinessDayLaterFormatParser from "./parsers/ENBusinessDayLaterFormatParser";
+import ENBusinessDayCasualRelativeFormatParser from "./parsers/ENBusinessDayCasualRelativeFormatParser";
 import ENMergeDateRangeRefiner from "./refiners/ENMergeDateRangeRefiner";
 import ENMergeDateTimeRefiner from "./refiners/ENMergeDateTimeRefiner";
 
@@ -54,13 +58,17 @@ export default class ENDefaultConfiguration {
                 parsers: [
                     new SlashDateFormatParser(littleEndian),
                     new ENTimeUnitWithinFormatParser(strictMode),
+                    new ENBusinessDayWithinFormatParser(),
                     new ENMonthNameLittleEndianParser(),
                     new ENMonthNameMiddleEndianParser(/*shouldSkipYearLikeDate=*/ littleEndian),
                     new ENWeekdayParser(),
                     new ENSlashMonthFormatParser(),
                     new ENTimeExpressionParser(strictMode),
                     new ENTimeUnitAgoFormatParser(strictMode),
+                    new ENBusinessDayAgoFormatParser(),
                     new ENTimeUnitLaterFormatParser(strictMode),
+                    new ENBusinessDayLaterFormatParser(),
+                    new ENBusinessDayCasualRelativeFormatParser(),
                 ],
                 refiners: [new ENMergeDateTimeRefiner()],
             },

@@ -276,6 +276,14 @@ export const TIME_UNITS_NO_ABBR_PATTERN = repeatedTimeunitPattern(
     TIME_UNIT_CONNECTOR_PATTERN
 );
 
+//-----------------------------
+
+/**
+ * Matches a number followed by "business day(s)" or "working day(s)", e.g.
+ * "3 business days", "ten working days", "a business day".
+ */
+export const BUSINESS_DAY_TIME_UNITS_PATTERN = `(${NUMBER_PATTERN})\\s{0,3}(?:business|working)\\s{0,3}days?`;
+
 export function parseDuration(timeunitText): null | Duration {
     const fragments = {};
     let remainingText = timeunitText;
