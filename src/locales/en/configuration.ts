@@ -9,6 +9,7 @@ import ENSlashMonthFormatParser from "./parsers/ENSlashMonthFormatParser";
 import ENTimeExpressionParser from "./parsers/ENTimeExpressionParser";
 import ENTimeUnitAgoFormatParser from "./parsers/ENTimeUnitAgoFormatParser";
 import ENTimeUnitLaterFormatParser from "./parsers/ENTimeUnitLaterFormatParser";
+import ENBusinessDayParser from "./parsers/ENBusinessDayParser";
 import ENMergeDateRangeRefiner from "./refiners/ENMergeDateRangeRefiner";
 import ENMergeDateTimeRefiner from "./refiners/ENMergeDateTimeRefiner";
 
@@ -61,6 +62,7 @@ export default class ENDefaultConfiguration {
                     new ENTimeExpressionParser(strictMode),
                     new ENTimeUnitAgoFormatParser(strictMode),
                     new ENTimeUnitLaterFormatParser(strictMode),
+                    new ENBusinessDayParser(/*allowCasualModifier=*/ !strictMode),
                 ],
                 refiners: [new ENMergeDateTimeRefiner()],
             },

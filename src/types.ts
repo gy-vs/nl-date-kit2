@@ -14,6 +14,15 @@ export interface ParsingOption {
     timezones?: TimezoneAbbrMap;
 
     /**
+     * The weekdays considered as the weekend (non-business days). The values
+     * use the exported {@link Weekday} enum, e.g. `[Weekday.FRIDAY, Weekday.SATURDAY]`.
+     * This affects business/working day expressions such as "in 3 business days"
+     * or "next working day".
+     * (default = [Weekday.SATURDAY, Weekday.SUNDAY])
+     */
+    weekendDays?: Weekday[];
+
+    /**
      * Internal debug event handler.
      * @internal
      */

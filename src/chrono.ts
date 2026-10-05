@@ -1,8 +1,9 @@
 import { ReferenceWithTimezone, ParsingComponents, ParsingResult } from "./results";
-import { Component, ParsedResult, ParsingOption, ParsingReference } from "./types";
+import { Component, ParsedResult, ParsingOption, ParsingReference, Weekday } from "./types";
 import { AsyncDebugBlock, DebugHandler } from "./debugging";
 import ENDefaultConfiguration from "./locales/en/configuration";
 import { toTimezoneOffset } from "./timezone";
+import { DEFAULT_WEEKEND_DAYS } from "./calculation/businessDays";
 
 /**
  * Chrono configuration.
@@ -148,6 +149,12 @@ export class ParsingContext implements DebugHandler {
     readonly reference: ReferenceWithTimezone;
 
     /**
+     * The set of weekdays (see {@link Weekday}) considered as the weekend.
+     * Defaults to Saturday and Sunday.
+     */
+    readonly weekendDays: Set<Weekday>;
+
+    /**
      * @deprecated. Use `reference.instant` instead.
      */
     readonly refDate: Date;
@@ -155,8 +162,37 @@ export class ParsingContext implements DebugHandler {
     constructor(text: string, refDate?: ParsingReference | Date, option?: ParsingOption) {
         this.text = text;
         this.option = option ?? {};
+        this.weekendDays = ParsingContext.resolveWeekendDays(this.option.weekendDays);
         this.reference = ReferenceWithTimezone.fromInput(refDate, this.option.timezones);
         this.refDate = this.reference.instant;
+    }
+
+    private static resolveWeekendDays(weekendDays?: Weekday[]): Set<Weekday> {
+        if (weekendDays === undefined) {
+            return new Set(DEFAULT_WEEKEND_DAYS);
+        }
+
+        if (!Array.isArray(weekendDays)) {
+            throw new Error(`weekendDays option must be an array of Weekday values, but received: ${weekendDays}`);
+        }
+
+        for (const weekday of weekendDays) {
+            if (!Number.isInteger(weekday) || weekday < Weekday.SUNDAY || weekday > Weekday.SATURDAY) {
+                throw new Error(
+                    `weekendDays option must contain only Weekday values (${Weekday.SUNDAY}-${Weekday.SATURDAY}), but received: ${weekday}`
+                );
+            }
+        }
+
+        const normalized = new Set(weekendDays);
+        if (normalized.size === 0) {
+            throw new Error("weekendDays option must not be empty; at least one day has to be a business day");
+        }
+        if (normalized.size >= 7) {
+            throw new Error("weekendDays option cannot mark all days of the week as the weekend");
+        }
+
+        return normalized;
     }
 
     createParsingComponents(components?: { [c in Component]?: number } | ParsingComponents): ParsingComponents {
